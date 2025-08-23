@@ -1,0 +1,280 @@
+{
+  "name": "Invoice Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9e5dbda3-fb8f-487c-b191-93f1c4cd1679",
+      "name": "When chat message received",
+      "webhookId": "988a31aa-b942-453b-be0f-efc754b58794"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are an AI agent responsible for keeping a Google Sheet up to date.\nYour job is to read incoming chat messages, review the current sheet data, and update any relevant information as needed.\n\nWorkflow\nInterpret the message – Understand what the user wants or is reporting.\nCheck the sheet – Use read_google_sheet to view current data.\nDecide changes – Figure out what needs to be added, updated, or modified.\nApply updates – Use the update tool to make necessary changes\nConfirm – Briefly state what was updated.\n\n## Available Tools \n- read_google_sheet: Retrieves current data from the Google Sheet \n- update_google_sheet: Updates specific cells or ranges in the sheet\n\n## Rules\nAlways read the sheet before making changes.\nUpdate only the data that’s new or changed — leave everything else untouched.\nBe precise; don’t overwrite unrelated information.\nAsk for clarification if the request is unclear.\nAfter updating, respond in the format:\n\"Updated [specific information] in the sheet.\"\n\n## Response Format \n1. Read the current sheet data \n2. Identify what needs updating based on the message \n3. Make the necessary updates \n4. Confirm: \"Updated [specific information] in the sheet.\" Stay focused, efficient, and accurate in your updates."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "acdf7435-d789-4255-b541-69770df01624",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1R9hjMPdK7BBBeRNKDx4J4BkOQoENh83pQyqRZlkeaNE",
+          "mode": "list",
+          "cachedResultName": "Invoice Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R9hjMPdK7BBBeRNKDx4J4BkOQoENh83pQyqRZlkeaNE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "InvoiceFollowup",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R9hjMPdK7BBBeRNKDx4J4BkOQoENh83pQyqRZlkeaNE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        208
+      ],
+      "id": "1c51bbd1-b657-4535-82a6-c999999f0060",
+      "name": "Get Rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "J6I8Ht88X6yWgyLv",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1R9hjMPdK7BBBeRNKDx4J4BkOQoENh83pQyqRZlkeaNE",
+          "mode": "list",
+          "cachedResultName": "Invoice Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R9hjMPdK7BBBeRNKDx4J4BkOQoENh83pQyqRZlkeaNE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "InvoiceFollowup",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R9hjMPdK7BBBeRNKDx4J4BkOQoENh83pQyqRZlkeaNE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Name__using_to_match_', ``, 'string') }}",
+            "Invoice Num": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Invoice_Num', ``, 'string') }}",
+            "Invoice Amount": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Invoice_Amount', ``, 'string') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Customer Name"
+          ],
+          "schema": [
+            {
+              "id": "Invoice Num",
+              "displayName": "Invoice Num",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Amount",
+              "displayName": "Invoice Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        176
+      ],
+      "id": "57f5575c-f363-4a7a-89c1-0e96b982fab3",
+      "name": "Update Rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "J6I8Ht88X6yWgyLv",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        208
+      ],
+      "id": "57ed220b-e362-4f0d-85e4-52eade0944f9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "wugowSxfv3R3hDAe",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        112
+      ],
+      "id": "5d5b386e-dfe0-4180-9cc0-7acb4973cb31",
+      "name": "Send a message in Gmail",
+      "webhookId": "96679cc8-4ca2-461c-add4-f8df6cd33c0a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YvcUIcwcc4w7tXlV",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Rows": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Rows": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "052123b7-ea75-4bd9-8a03-96c932600f2f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b3ff80e9bcccf95fecf0202dcd4c0ec145cf02427f16e914c2f0d2e2500d6ba"
+  },
+  "id": "emIeDnmkbYDECfiB",
+  "tags": []
+}
