@@ -1,0 +1,31 @@
+
+// Get the input data
+const inputData = $input.all();
+
+// Extract and process each item
+const outputData = [];
+
+for (const item of inputData) {
+  const imageUrl = item.json.choices[0].message.images[0].image_url.url;
+  
+  // Remove the data URI prefix to get just the base64 data
+  const base64Data = imageUrl.split(',')[1];
+  
+  // Convert base64 to binary buffer
+  const binaryData = Buffer.from(base64Data, 'base64');
+  
+  outputData.push({
+    json: {
+      ...item.json, // Keep original data
+    },
+    binary: {
+      data: {
+        data: binaryData.toString('base64'), //  must be a base64 string
+        mimeType: 'image/png',
+        fileName: 'generated_image.png',
+      }
+    }
+  });
+}
+
+return outputData;
