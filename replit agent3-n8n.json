@@ -1,0 +1,103 @@
+{
+  "name": "lovable",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.5-flash-image-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        { \"type\": \"text\", \"text\": \"=wear\" },\n        { \"type\": \"image_url\", \"image_url\": { \"url\": \"data:image/png;base64,{{ $json.body.image1 }}\" } },\n        { \"type\": \"image_url\", \"image_url\": { \"url\": \"data:image/png;base64,{{ $json.body.image2 }}\" } }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "2ff99e8a-841b-4b82-8f83-8a3c7e17d5c7",
+      "name": "Nano Banana",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        -144
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "6Tm2xxIDxUSHBTNx",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const choice = $json.choices?.[0];\nif (!choice) {\n  return [{ json: { error: \"No choices returned\" } }];\n}\n\nconst out = {};\n\n// Grab text if present\nif (typeof choice.message?.content === \"string\" && choice.message.content.trim()) {\n  out.text = choice.message.content.trim();\n}\n\n// Grab images if present\nif (Array.isArray(choice.message?.images)) {\n  const imageObj = choice.message.images.find(i => i.type === \"image_url\" && i.image_url?.url);\n  if (imageObj) {\n    out.ugcImage = imageObj.image_url.url;\n  }\n}\n\nif (!out.text && !out.ugcImage) {\n  return [{ json: { error: \"No valid UGC output\" } }];\n}\n\nreturn [{ json: out }];\n"
+      },
+      "id": "f2372e0d-a8cc-4b8d-99ec-008bc515132b",
+      "name": "Extract UGC Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3617acb0-2024-4689-9490-53b974f1ed04",
+        "responseMode": "lastNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        80,
+        -144
+      ],
+      "id": "e7fb1eac-0d89-4cab-9d44-d3c5bf528f6a",
+      "name": "Webhook",
+      "webhookId": "3617acb0-2024-4689-9490-53b974f1ed04"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nano Banana": {
+      "main": [
+        [
+          {
+            "node": "Extract UGC Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract UGC Image": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Nano Banana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "da547261-ec84-4369-9167-9a54f53f692f",
+  "meta": {
+    "instanceId": "bd53d59cc4463d140770937d64925c00285a573a94a1408f16c0cea24d5442a2"
+  },
+  "id": "la5Ntz19TNNwzK1z",
+  "tags": []
+}
