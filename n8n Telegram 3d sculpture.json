@@ -1,0 +1,233 @@
+{
+  "name": "Telegram UGC",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -592,
+        16
+      ],
+      "id": "23fd0d2b-cc26-4268-800f-6b63213b2834",
+      "name": "Telegram Input Message",
+      "webhookId": "f15a6b0d-851e-4ea3-b649-75debaea33d5",
+      "credentials": {
+        "telegramApi": {
+          "id": "qVCg9ICc7UtrRdXX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7710554564:AAHEtsrmHPSHu9_WcqxEHXKmxogNINDwZ8c/getFile",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "file_id",
+              "value": "={{ $json.message.photo[$json.message.photo.length - 1].file_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -368,
+        16
+      ],
+      "id": "361db5bb-d185-41da-93d8-4c92a5adc9bf",
+      "name": "Get Telegram File Path"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.telegram.org/file/bot7710554564:AAHEtsrmHPSHu9_WcqxEHXKmxogNINDwZ8c/' + $('Get Telegram File Path').item.json.result.file_path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        16
+      ],
+      "id": "12535b85-f381-4f65-853c-a07882f90fd5",
+      "name": "Download Telegram File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.5-flash-image-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"Create a 1/7 scale commercialized figurine of the characters in the picture, in a realistic style, in a real environment. The figurine is placed on a computer desk. The figurine has a round transparent acrylic base, with no text on the base. The content on the computer screen is a 3D modeling process of this figurine. Next to the computer screen is a toy packaging box, designed in a style reminiscent of high-quality collectible figures, printed with original artwork. The packaging features two-dimensional flat illustrations.\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json.data.image.url }}\"\n          }\n        }\n      ]\n    }\n  ]\n  \n} \n\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        16
+      ],
+      "id": "377e4ab9-849e-455a-844f-794d15f43e9c",
+      "name": "Nano Banana",
+      "credentials": {
+        "openRouterApi": {
+          "id": "vKiseupQEuq3vIM0",
+          "name": "OpenRouter account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Get the input data\nconst inputData = $input.all();\n\n// Extract and process each item\nconst outputData = [];\n\nfor (const item of inputData) {\n  const imageUrl = item.json.choices[0].message.images[0].image_url.url;\n\n  // If response already contains base64 data URI, strip prefix\n  const base64Data = imageUrl.includes(',') ? imageUrl.split(',')[1] : imageUrl;\n\n  // Convert base64 to binary buffer\n  const binaryData = Buffer.from(base64Data, 'base64');\n\n  outputData.push({\n    json: {\n      ...item.json,\n    },\n    binary: {\n      data: {\n        data: binaryData.toString('base64'),\n        mimeType: 'image/png',\n        fileName: 'generated_image.png'\n      }\n    }\n  });\n}\n\nreturn outputData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        16
+      ],
+      "id": "4eb51c69-1ac5-44b5-8e33-b974c4171de9",
+      "name": "Extract Image"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Telegram Input Message').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        16
+      ],
+      "id": "67417bbc-28c8-4a85-9e08-cc778431e416",
+      "name": "Send a photo message",
+      "webhookId": "87201b51-a722-44b0-82e4-dbabfeb37687",
+      "credentials": {
+        "telegramApi": {
+          "id": "qVCg9ICc7UtrRdXX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload?key=baa09490bda49d401f57509b04532b4c",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        16
+      ],
+      "id": "2e29f259-5176-4267-8b99-b0b551b4d73f",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Input Message": {
+      "main": [
+        [
+          {
+            "node": "Get Telegram File Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Telegram File Path": {
+      "main": [
+        [
+          {
+            "node": "Download Telegram File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Telegram File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nano Banana": {
+      "main": [
+        [
+          {
+            "node": "Extract Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Image": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Nano Banana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e11a54c4-545e-4a7d-a80e-e8e4911fb816",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bd53d59cc4463d140770937d64925c00285a573a94a1408f16c0cea24d5442a2"
+  },
+  "id": "LyBKELXsyi4Pxs9o",
+  "tags": []
+}
