@@ -1,0 +1,189 @@
+{
+  "name": "seo",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Website URL",
+        "formDescription": "Enter the website URL here",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Website URL",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "1a39a0ed-d58d-42c8-88ca-b9228ab41e74",
+      "name": "Enter Website URL",
+      "webhookId": "c55fe50b-66c3-4226-9dde-91844d5fc149"
+    },
+    {
+      "parameters": {
+        "url": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c36ffc1e-4db0-4db7-949a-ced0d8e84a88",
+      "name": "Scrape URL"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        224
+      ],
+      "id": "0b09a537-d236-4e4e-8b34-ae18c33162ad",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        224
+      ],
+      "id": "55412e69-d766-41b8-becd-d00d1b990215",
+      "name": "4.1 mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "f45lWyGy8zF5sbiw",
+          "name": "n8nKey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "architechsoln@gmail.com",
+        "subject": "=Audit Completed: {{ $('Enter Website URL').item.json['Website URL'] }}",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "44218fa5-4b77-4b32-a41a-89197be8d3ad",
+      "name": "Email Results",
+      "webhookId": "ec4dc975-f899-416b-a16b-08896bbb7395",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YvcUIcwcc4w7tXlV",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=  ",
+        "options": {
+          "systemMessage": "=You are an expert SEO and content auditor. Analyze the provided HTML data thoroughly and output a consolidated audit covering both technical SEO issues and content optimization insights.\n\nInstructions:\n\nCategorize findings into exactly 7 sections:\n\nCRITICAL ISSUES (address immediately)\n\nIMPROVEMENT OPPORTUNITIES (include potential benefits)\n\nQUICK FIXES (can be resolved immediately)\n\nCONTENT QUALITY & TARGET AUDIENCE ALIGNMENT\n\nKEYWORD OPTIMIZATION ANALYSIS\n\nREADABILITY & USER EXPERIENCE\n\nGOOGLE SEARCHABILITY & ENGAGEMENT RECOMMENDATIONS\n\nFollow this format for each finding:\nCurrent Issue → Specific Recommendation → Expected Impact\n\nUse bullet points only\n\nBe specific and actionable\n\nNo introductions, no explanations, no conclusions\n\nFocus only on findings from the provided HTML\n\nOutput Formatting Rules:\n\nUse <h3> for category headings\n\nUse <ul> and <li> for bullet points\n\nUse <strong> for emphasis\n\nUse <br> where needed for clarity\n\nDo not include <html>, <body>, or any other wrapper tags"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        0
+      ],
+      "id": "da95d683-6ec4-4637-a88f-5d776f238a7c",
+      "name": "SEO Intelligence Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Enter Website URL": {
+      "main": [
+        [
+          {
+            "node": "Scrape URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape URL": {
+      "main": [
+        [
+          {
+            "node": "SEO Intelligence Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "SEO Intelligence Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4.1 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SEO Intelligence Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEO Intelligence Agent": {
+      "main": [
+        [
+          {
+            "node": "Email Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e4906fb5-39e5-44a6-b35c-5ae97b0ade36",
+  "meta": {
+    "instanceId": "1b3ff80e9bcccf95fecf0202dcd4c0ec145cf02427f16e914c2f0d2e2500d6ba"
+  },
+  "id": "gcKY2XyC2epzgXfs",
+  "tags": []
+}
