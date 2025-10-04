@@ -1,0 +1,290 @@
+{
+  "name": "HotelBooking",
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Use this to search through the knowledge base",
+        "method": "POST",
+        "url": "https://prod-1-data.ke.pinecone.io/assistant/chat/hotelinfo",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "pineconeApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $fromAI(\"searchQuery\") }}\"\n    }\n  ],\n  \"stream\": false,\n  \"model\": \"gpt-4.1\",\n  \"include_highlights\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        208
+      ],
+      "id": "72859acf-0b5e-45f7-b236-9e0387dda10b",
+      "name": "Pinecone",
+      "credentials": {
+        "pineconeApi": {
+          "id": "gLhZf4ao8fqmXoMM",
+          "name": "futuristicpinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        224
+      ],
+      "id": "8f01872f-f0e7-48b2-bf70-d6379955cf01",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "7DFWI2y8oPngZKVV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are a hotel booking assistant for Taj Fort Aguada Resort & Spa, Goa, India\nYour primary responsibilities are:\n1. Greet the customer with - Welcome to Taj Fort Aguada Resort & Spa, Goa, India\n2. Help customers search for room availability and inventory\n3. Provide guidance on Room Type\n4. Take booking details from the customer\n5. Book a hotel room\nFollow these guidelines when interacting with customers:\n- Be courteous and professional at all times\n- Ask for Room Type - Garden or Sea View\n- Provide information about Garden or Sea View from Knowledge Base\n- Always verify room availability before proceeding with bookings.\n- Validate the room inventory for Room Type from the customer check-in-date\n- Collect following information in below format and before booking a room and ask customer for confirmation:\n1. Check-in date\n2. Room Type - Garden View or Sea View\n3. Guest Name\n4. Number of Nights\n- Return Booking ID and let the user know that his booking is confirmed\nWhen checking inventory:\n- Verify real-time availability\n- Explain room types\nFor hotel bookings:\n- Confirm the hotel's location - Taj Fort Aguada Resort & Spa, Goa,Beach Sinquerim, Candolim, Goa 403515\n- Detail included amenities and services from the Knowledge Bases\n- Provide information about check-in/check-out times\n- Escalate complex issues to human agents when necessary\nRemember to:\n- Keep track of conversation context\n- Double-check all details before confirming bookings\n- Send confirmation details after successful bookings\n- Maintain customer privacy and data security"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "02136f05-42db-4b0c-b9b7-631c6da64dcd",
+      "name": "Hotel Booking AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        0
+      ],
+      "id": "01590a21-5b77-4eb5-8375-842cb0c71faf",
+      "name": "Send a text message",
+      "webhookId": "0c2c7efc-90de-4dd7-9afc-75cbc624b896",
+      "credentials": {
+        "telegramApi": {
+          "id": "qVCg9ICc7UtrRdXX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "HotelAvailability"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        336,
+        224
+      ],
+      "id": "63741722-9730-45e4-9b5e-712d56c16129",
+      "name": "Hotel Availability",
+      "credentials": {
+        "supabaseApi": {
+          "id": "AZix5JIDN1GxzCX2",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "HotelRoomBooking",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "checkin_date",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "room_type",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues1_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "guest_name",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues2_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "number_of_night",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues3_Field_Value', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        480,
+        192
+      ],
+      "id": "27be965b-cd60-4d14-83df-14bc319aa615",
+      "name": "Hotel Booking",
+      "credentials": {
+        "supabaseApi": {
+          "id": "AZix5JIDN1GxzCX2",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        224
+      ],
+      "id": "f2919cbc-cb04-4ec4-b72d-82e4ac7616d2",
+      "name": "Memory",
+      "credentials": {
+        "postgres": {
+          "id": "RBaveQ98O1QWWxsv",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "425ab94b-0d12-4baf-b887-a416577b49ef",
+      "name": "Telegram Trigger",
+      "webhookId": "f5494d06-9282-4938-8b83-6fd760965eba",
+      "credentials": {
+        "telegramApi": {
+          "id": "qVCg9ICc7UtrRdXX",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Pinecone": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Booking AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Hotel Booking AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hotel Booking AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hotel Availability": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Booking AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hotel Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Booking AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Hotel Booking AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Hotel Booking AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f1d92663-5c04-40ef-bef0-23dc0381b220",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bd53d59cc4463d140770937d64925c00285a573a94a1408f16c0cea24d5442a2"
+  },
+  "id": "zhLbIw0DcPJ1fvfm",
+  "tags": []
+}
